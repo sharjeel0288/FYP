@@ -237,6 +237,45 @@ def create_contours_stream(image_url, number_of_contours, ref_width, ref_height)
     }
 
 
+def calculate_color_percentages(image_url, k=3):
+    # Load the image
+    image = cv2.imread(image_url)
+
+    # Convert the image to RGB format (OpenCV loads as BGR by default)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    # Flatten the image to a 2D array of pixels
+    pixels = image_rgb.reshape((-1, 3))
+
+    # Fit K-Means clustering to the pixel data
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(pixels)
+
+    # Get the cluster assignments for each pixel
+    cluster_labels = kmeans.labels_
+
+    # Initialize counters for each color
+    total_pixels = pixels.shape[0]
+    color_counts = {}
+
+    # Iterate through each cluster
+    for cluster_id in range(k):
+        # Find pixels assigned to this cluster
+        cluster_pixels = pixels[cluster_labels == cluster_id]
+
+        # Calculate the percentage of pixels in this cluster
+        percentage = (cluster_pixels.shape[0] / total_pixels) * 100
+
+        # Get the average color of this cluster
+        average_color = tuple(map(int, np.mean(cluster_pixels, axis=0)))
+
+        # Store the average color and its percentage
+        color_counts[average_color] = percentage
+
+    return color_counts
+# rgba(132,150,162,255)
+
+
 # Usage example
 image_url = "1809.jpg"  # Replace with your image URL or file path
 number_of_contours = 1
@@ -246,7 +285,9 @@ ref_height = 0.5
 result = create_contours_stream(
     image_url, number_of_contours, ref_width, ref_height)
 print(result)
-
+color_percentages = calculate_color_percentages(image_url)
+for color, percentage in color_percentages.items():
+    print(f"Color {color}: {percentage:.2f}%")
 
 # "contours": <Number (default=1): number of items you want to get measurements, ordered by size>,
 # "refWidth": <Number (default=1): the width of reference object in your preferred length unit>,
