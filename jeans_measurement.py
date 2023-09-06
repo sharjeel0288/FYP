@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import uuid
 
+from sklearn.cluster import KMeans
+
 
 def sort_contours_by_area(contours):
     contour_sizes = [(i, cv2.contourArea(cnt))
@@ -101,25 +103,28 @@ def distance_point_segment(p, a, b):
     return np.sqrt((v[0] - p[0])**2 + (v[1] - p[1])**2)
 
 
-def analyze_jeans_colors(image, jeans_region):
-    # Crop the detected jeans region from the image
-    x, y, w, h = cv2.boundingRect(jeans_region)
-    jeans_cropped = image[y:y+h, x:x+w]
+# def analyze_jeans_colors(image, jeans_region):
+#     # Crop the detected jeans region from the image
+#     x, y, w, h = cv2.boundingRect(jeans_region)
+#     jeans_cropped = image[y:y+h, x:x+w]
 
-    # Convert cropped region to RGB
-    jeans_rgb = cv2.cvtColor(jeans_cropped, cv2.COLOR_BGR2RGB)
+#     # Convert cropped region to RGB
+#     jeans_rgb = cv2.cvtColor(jeans_cropped, cv2.COLOR_BGR2RGB)
 
-    # Flatten the image to a list of RGB tuples
-    jeans_pixels = jeans_rgb.reshape(-1, 3)
+#     # Flatten the image to a list of RGB tuples
+#     jeans_pixels = jeans_rgb.reshape(-1, 3)
 
-    # Calculate the dominant colors and their percentages
-    total_pixels = len(jeans_pixels)
-    color_counts = Counter(map(tuple, jeans_pixels))
-    dominant_colors = color_counts.most_common(5)  # Get the top 5 dominant colors
+#     # Calculate the dominant colors and their percentages
+#     total_pixels = len(jeans_pixels)
+#     color_counts = Counter(map(tuple, jeans_pixels))
+#     dominant_colors = color_counts.most_common(
+#         5)  # Get the top 5 dominant colors
 
-    color_percentages = [(color, count / total_pixels * 100) for color, count in dominant_colors]
+#     color_percentages = [(color, count / total_pixels * 100)
+#                          for color, count in dominant_colors]
 
-    return color_percentages
+#     return color_percentages
+
 
 def create_contours_stream(image_url, number_of_contours, ref_width, ref_height):
     """
@@ -169,23 +174,23 @@ def create_contours_stream(image_url, number_of_contours, ref_width, ref_height)
             points.append(tuple(contours[i][j][0]))
 
         measurements.append(get_jeans_measurements(points, ppm))
-         # Analyze jeans colors
-        color_percentages = analyze_jeans_colors(image, contours[i])
-        
+        # Analyze jeans colors
+        # color_percentages = analyze_jeans_colors(image, contours[i])
+
         # Draw and label jeans colors
-        color_y = 150
-        for color, percentage in color_percentages:
-            r, g, b = color
-            cv2.putText(
-                image,
-                f"Color: ({r},{g},{b}) - {percentage:.2f}%",
-                (10, color_y),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (0, 0, 255),
-                2,
-            )
-            color_y += 30
+        # color_y = 150
+        # for color, percentage in color_percentages:
+        #     r, g, b = color
+        #     cv2.putText(
+        #         image,
+        #         f"Color: ({r},{g},{b}) - {percentage:.2f}%",
+        #         (10, color_y),
+        #         cv2.FONT_HERSHEY_SIMPLEX,
+        #         1,
+        #         (0, 0, 255),
+        #         2,
+        #     )
+        #     color_y += 30
     # Draw and label measurements
     for measurement in measurements:
         cv2.putText(
@@ -233,7 +238,9 @@ def create_contours_stream(image_url, number_of_contours, ref_width, ref_height)
         "uri": f"./outputs/{id}.contours.jpg",
         "id": id,
         "total": len(contours),
-    "items": {'measurements':measurements,'Colors':color_percentages},
+        "items": {'measurements': measurements, 
+                #   'Colors': color_percentages
+                  },
     }
 
 
@@ -277,7 +284,7 @@ def calculate_color_percentages(image_url, k=3):
 
 
 # Usage example
-image_url = "1809.jpg"  # Replace with your image URL or file path
+image_url = "jeans3.jpg"  # Replace with your image URL or file path
 number_of_contours = 1
 ref_width = 0.5
 ref_height = 0.5
