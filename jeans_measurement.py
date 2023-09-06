@@ -122,6 +122,18 @@ def analyze_jeans_colors(image, jeans_region):
     return color_percentages
 
 def create_contours_stream(image_url, number_of_contours, ref_width, ref_height):
+    """
+    Create contours stream for analyzing jeans measurements and colors.
+
+    Args:
+        image_url (str): URL or file path to the input image.
+        number_of_contours (int): Number of contours to analyze.
+        ref_width (float): The width of the reference object in your preferred length unit.
+        ref_height (float): The height of the reference object in your preferred length unit.
+
+    Returns:
+        dict: A dictionary containing measurements and color information.
+    """
     id = str(uuid.uuid4())
     image = cv2.imread(image_url)
     width, height, _ = image.shape
